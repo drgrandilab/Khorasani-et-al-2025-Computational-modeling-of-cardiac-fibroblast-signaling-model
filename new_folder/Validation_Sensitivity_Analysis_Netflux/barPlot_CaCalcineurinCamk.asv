@@ -1,0 +1,97 @@
+%% comparing to v2: 
+% here I load different files
+clc;
+clear all;
+close all;
+
+labels = {'CI','CIII','PAI1','periostin',...
+ 'CTGF','aSMA','EDAFN'};
+
+path = '/Users/najmekhorasani/Library/CloudStorage/Dropbox/Najme Folder/article/Atrial-fibrosis-Model/Github/Validation_Sensitivity_Analysis_Netflux/Netflux/';
+pathName = [path,'barplots_CaCalcineurinCamKII_files/'];
+
+flg = 0;
+while flg==0
+    flg = input('1: AngII, 2: TGFB: ');
+    if flg ==1
+    fileName_prefix = 'base_24h_AngII_24h_AngII_';
+    elseif flg==2
+    fileName_prefix = 'base_24h_TGFB_24h_TGFB_';
+    else
+        disp('wrong input!');
+        flg=0;
+    end
+end
+
+
+fileName_CTL = [pathNamefileName_prefix,'72h_T1.txt'];
+fileName_Ca_KD = [fileName_prefix,'CaKD_72h_T1.txt'];
+fileName_CamKII_KD = [fileName_prefix,'CamKIIKD_72h_T1.txt'];
+fileName_Calcineurin_KD = [fileName_prefix,'CalcineurinKD_72h_T1.txt'];
+
+load([pathName,'specID.mat']);
+
+highAngInd = 481;
+
+fName2Read = [fileName_prefix,'comp1.txt'];
+% fName2Read = ['comp_1.txt'];
+wholeValues = readTXTfile(fName2Read,labels,pathName);
+lastV = wholeValues(:,highAngInd)';
+
+fName2Read = [fileName_prefix,'CaKNO_comp1.txt'];
+% fName2Read = ['comp_1.txt'];
+wholeValues = readTXTfile(fName2Read,labels,pathName);
+lastVca = wholeValues(:,highAngInd)';
+
+fName2Read = [fileName_prefix,'CamkKNO_comp1.txt'];
+% fName2Read = ['comp_1.txt'];
+wholeValues = readTXTfile(fName2Read,labels,pathName);
+lastVcamk = wholeValues(:,highAngInd)';
+
+fName2Read = [fileName_prefix,'CalcKNO_comp1.txt'];
+% fName2Read = ['comp_1.txt'];
+wholeValues = readTXTfile(fName2Read,labels,pathName);
+lastVcalci = wholeValues(:,highAngInd)';
+
+data = [lastV;lastVca;lastVcalci;lastVcamk];
+
+bar(data');
+
+legend([{'Ctl'},{'Ca-KNO'},{'Calcinurin-KNO'},{'CaMKII-KNO'}])
+xticklabels(labels)
+xlabel('Fibrotic Output Nodes')
+ylabel('Activity')
+set(gca,'FontSize',20);
+lgd.FontSize = 18;
+% exportgraphics(gcf, 'barPlot_comparision_CaCalcineurinCamk.pdf');
+
+%% functions
+
+function lastValues = readTXTfile(fName,specIDToExtract,pathName)
+    % specIDToExtract = {'CI','CIII','aSMA', 'MMP1', 'MMP2','MMP9'};
+    global w n K tau ymax y0 specID reactionIDs reactionRules paramList ODElist CNAmodel tstep tUnit tUnitLabel myAxes
+    global tEnd tNow tCum yCum tspan options count indPlot pathname2saveData
+    % Specify the file path
+    %     default = 'Data Sheet1.txt';
+    nfname = fullfile(pathName,fName);
+    nfilename = nfname; 
+
+    % Read the data using importdata
+    data = importdata(nfilename);
+    
+
+    % Initialize variables to store the last values
+    lastValues = [];
+
+    % Extract the last values of specific factors
+    for i = 1:numel(specIDToExtract)
+        factorIndex = find(strcmp(specID, specIDToExtract{i}));
+        factorData = data.data(factorIndex,:);
+        lastValues(i,:) = factorData;
+    end
+
+    % Display the last values
+%     disp(lastValues);
+
+end
+
